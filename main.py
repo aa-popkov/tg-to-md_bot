@@ -14,7 +14,7 @@ from aiogram.types import Message, BufferedInputFile, BotCommand
 from dotenv import load_dotenv
 
 from middleware import LongTimeMiddleware
-from utils import parse_text_to_md, parse_html_to_md
+from utils import parse_html_to_md
 
 load_dotenv()
 TOKEN = getenv("BOT_TOKEN")

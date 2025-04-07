@@ -2,6 +2,8 @@ services:
   bot:
     build:
       context: .
+    container_name: tg-to-md-bot
+    hostname: tg-to-md-bot
     env_file:
       - .env
     restart: unless-stopped
