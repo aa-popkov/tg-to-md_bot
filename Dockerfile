@@ -1,4 +1,4 @@
-FROM python:alpine3.11
+FROM python:alpine3.11-slim
 LABEL authors="alexeypopkov"
 
 WORKDIR /app
