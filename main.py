@@ -90,10 +90,6 @@ async def parse_message(message: Message) -> None:
 @dp.message(F.caption & (F.media_group_id == None), flags={"long_operation": True})
 async def parse_message_with_caption(message: Message) -> None:
     try:
-        if not message.caption_entities:
-            await message.answer(
-                message.caption if message.caption else "Что-то не так!")
-            return
         parsed_message = parse_html_to_md(message.html_text, message.caption_entities)
         cur_date = datetime.now().strftime("%Y%m%d_%H%M%S%f")
         if message.photo:
