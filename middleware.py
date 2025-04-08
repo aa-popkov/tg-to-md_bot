@@ -80,6 +80,7 @@ class MediaGroupMiddleware(BaseMiddleware):
 
         if self.album_data.get(event.media_group_id):
             self.album_data[event.media_group_id].append(event)
+            return
         else:
             self.album_data[event.media_group_id] = [event]
             await asyncio.sleep(self.latency)

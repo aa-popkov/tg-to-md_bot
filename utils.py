@@ -5,9 +5,24 @@ from aiogram.enums import MessageEntityType
 from aiogram.types import MessageEntity
 
 
-def parse_html_to_md(html_text: str, entities: List[MessageEntity]):
-    if not len(entities):
+def parse_html_to_md(html_text: str, entities: List[MessageEntity] | None):
+    if not entities or not len(entities):
         return html_text
+
+
+    # TODO: It's a bullshit, need correct sort and delete this
+    format_entities = list(filter(
+        lambda x: x.type in [MessageEntityType.BOLD, MessageEntityType.ITALIC, MessageEntityType.UNDERLINE,
+                             MessageEntityType.STRIKETHROUGH], entities))
+    code_entities = list(filter(lambda x: x.type == MessageEntityType.CODE, entities))
+    pre_entities = list(filter(lambda x: x.type == MessageEntityType.PRE, entities))
+    link_entities = list(filter(lambda x: x.type == MessageEntityType.TEXT_LINK, entities))
+
+    html_text = parse_by_entity(html_text, [*format_entities, *pre_entities, *code_entities, *link_entities])
+
+    return html_text
+
+def parse_by_entity(html_text: str, entities: List[MessageEntity]):
     for entity in entities:
         if entity.type == MessageEntityType.BOLD:
             html_text = replace_html_formatting_to_md(html_text, "<b>", "**")
@@ -45,7 +60,8 @@ def replace_html_formatting_to_md(html_text: str, html_chars: str, md_chars: str
                  + md_chars + html_text[find_end_index + len_html_chars + 1:]
                  )
     if html_text.find(html_chars, find_end_index) != -1:
-        html_text = replace_html_formatting_to_md(html_text, html_chars, md_chars, find_end_index + len_html_chars + 1)
+        html_text = replace_html_formatting_to_md(html_text, html_chars, md_chars,
+                                                  find_end_index - (len_html_chars * 2 + 1) + (len(md_chars) * 2))
     return html_text
 
 
@@ -92,5 +108,5 @@ def replace_html_code_block_to_md(html_text: str, start_index: int = 0):
                                       f"```{code_lang}\n{code_string.split('<pre>')[1].split('</pre>')[0]}\n```")
 
     if html_text.find("<pre>", find_end_index) != -1:
-        html_text = replace_html_code_block_to_md(html_text, find_end_index + 6)
+        html_text = replace_html_code_block_to_md(html_text, find_end_index + 4)
     return html_text

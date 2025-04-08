@@ -1,53 +1,57 @@
-# 📄 Telegram Markdown Converter Bot  
-_Превращает Telegram-сообщения в Markdown-файлы с сохранением форматирования и картинок._  
-Было написано за пару часов, для решения конкртеной задачи, структура проекта полное 💩, будет исправлено в будущем(_возможно_)
+# 📄 Telegram Markdown Converter Bot
 
-## 🌟 Основные возможности
-- Конвертация сообщений в Markdown с сохранением:
-  - **Текстового форматирования** (**жирный**, _курсив_, `код`)
-  - **Изображений** 🖼️ (встраиваются как base64)
-  - **Списков и ссылок**
-- Простота использования - никаких сложных команд!
+_Converts Telegram messages into Markdown files while preserving formatting and images._
+
+## 🌟 Key Features
+
+- Converts messages to Markdown while preserving:
+    - **Text formatting** (**bold**, _italic_, `code`, etc.)
+    - **Images** 🖼️ (embedded as base64)
+    - **Lists and links**
+- Easy to use—no complicated commands!
 
 ## 📋 Roadmap
 
-- [x] Обработка простых сообщений
-- [x] Обработка сообщений без медиа-группы(_одна картинка в сообщении_)
-- [ ] Обработка сообщений с медиа-группой(_несколько картинок в сообщении_)
-- [ ] Обработка сообщений с видео
+- [x] Basic message processing
+- [x] Processing messages without a media group (_single image in a message_)
+- [x] Processing messages with a media group (_multiple images in a message_)
+- [ ] Processing messages with video
+- [ ] Add multilingual support (i18n)
+  - [x] 🇷🇺
+  - [ ] 🇺🇸
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
-### 🧑‍💻 Разработка
+### 🧑‍💻 Development
 
-1. **Клонируйте репозиторий:**  
-   ```bash  
+1. **Clone the repository:**
+   ```shell 
    git clone https://github.com/aa-popkov/tg-to-md_bot.git
    ```
-2. **Установите зависимости:**  
-   ```bash  
-   pip install -r requirements.txt
-   ```
-3. **Настройте переменные окружения:**  
-   ```bash  
-   cp .env.example .env
-   ``` 
-4. **Запустите бота:**  
-   ```bash  
-   python main.py
-   ```
+2. **Install dependencies:**
+    ```shell
+    pip install -r requirements.txt
+    ```
+3. **Set up environment variables:**
+    ```shell
+    cp .env.example .env  
+    ```
+4. **Run the bot:**
+    ```shell
+    python main.py  
+    ```
 
-### 🌎 Публикация
+### 🌎 Deployment
 
-1. **Клонируйте репозиторий:**  
-   ```bash  
+1. **Clone the repository:**  
+   ```shell  
    git clone https://github.com/aa-popkov/tg-to-md_bot.git && cd tg-to-md_bot
    ```
-2. **Настройте переменные окружения:**  
-   ```bash  
+2. **Set up environment variables:**  
+   ```shell  
    cp .env.example .env
    ``` 
-3. **Запустите Docker-контейнер:**  
-   ```bash  
+3. **Run the Docker container:**  
+   ```shell  
    docker compose up -d --build
    ```
