@@ -52,7 +52,10 @@ class LongTimeMiddleware(BaseMiddleware):
             )
 
     async def hide_icon(self):
-        await self.msg.bot.delete_message(self.msg.chat.id, self.msg.message_id)
+        try:
+            await self.msg.bot.delete_message(self.msg.chat.id, self.msg.message_id)
+        except Exception:
+            print(self.msg.chat.id, 'Cannot delete timer message!')
 
 
 class MediaGroupMiddleware(BaseMiddleware):

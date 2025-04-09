@@ -86,7 +86,10 @@ def replace_html_links_to_md(html_text: str, start_index: int = 0):
     html_text = html_text.replace(full_link, f"[{link_text}]({link_url})")
 
     if html_text.find("<a href=\"", find_end_index) != -1:
-        html_text = replace_html_links_to_md(html_text, find_end_index + 4)
+        # -11 - it's a diff len of char between html link and markdown link without data
+        # <a href=""></a> - 15
+        # []() - 4
+        html_text = replace_html_links_to_md(html_text, find_end_index - 11)
     return html_text
 
 
