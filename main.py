@@ -27,6 +27,8 @@ dp = Dispatcher()
 dp.message.middleware(MediaGroupMiddleware())
 dp.message.middleware(LongTimeMiddleware())
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s')
+logger = logging.getLogger(__name__)
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message, i18n: I18nContext) -> None:
@@ -48,7 +50,7 @@ async def command_set_ru_lang(message: Message, i18n: I18nContext) -> None:
         await i18n.set_locale("ru")
         await message.answer(i18n.get("change-lang"))
     except Exception as ex:
-        print(ex)
+        logger.error(ex)
         await message.answer(i18n.get("some-problem"))
 
 
@@ -58,7 +60,7 @@ async def command_set_en_lang(message: Message, i18n: I18nContext) -> None:
         await i18n.set_locale("en")
         await message.answer(i18n.get("change-lang"))
     except Exception as ex:
-        print(ex)
+        logger.error(ex)
         await message.answer(i18n.get("some-problem"))
 
 
@@ -69,7 +71,7 @@ async def test_i18n(message: Message, i18n: I18nContext) -> None:
         msg = i18n.get("hello", user=name)
         await message.reply(msg)
     except Exception as ex:
-        print(ex)
+        logger.error(ex)
         await message.answer(i18n.get("some-problem"))
 
 
@@ -84,7 +86,7 @@ async def parse_message(message: Message, i18n: I18nContext) -> None:
         text_file = BufferedInputFile(parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md")
         await message.answer_document(text_file)
     except Exception as ex:
-        print(ex)
+        logger.error(ex)
         await message.answer(i18n.get("some-problem"))
 
 
@@ -102,7 +104,7 @@ async def parse_message_with_caption(message: Message, i18n: I18nContext) -> Non
         text_file = BufferedInputFile(parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md")
         await message.answer_document(text_file)
     except Exception as ex:
-        print(ex)
+        logger.error(ex)
         await message.answer(i18n.get("some-problem"))
 
 
@@ -121,7 +123,7 @@ async def parse_message_with_media_group(message: Message, album: List[Message] 
         text_file = BufferedInputFile(parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md")
         await message.answer_document(text_file)
     except Exception as ex:
-        print(ex)
+        logger.error(ex)
         await message.answer(i18n.get("some-problem"))
 
 

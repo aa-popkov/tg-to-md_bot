@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from typing import List, Union, Callable, Dict, Any, Awaitable
 
 from aiogram import BaseMiddleware
@@ -7,6 +8,7 @@ from aiogram.types import Message, TelegramObject
 from aiogram_i18n.managers import BaseManager
 from aiogram.types.user import User
 
+logger = logging.getLogger(__name__)
 
 class LongTimeMiddleware(BaseMiddleware):
     clock_icons: list[str] = [
@@ -50,14 +52,14 @@ class LongTimeMiddleware(BaseMiddleware):
             index = index + 1 if index < len(self.clock_icons) - 1 else 0
             icon = self.clock_icons[index]
             await event.bot.edit_message_text(
-                icon, self.msg.chat.id, self.msg.message_id
+                icon, str(self.msg.chat.id), self.msg.message_id
             )
 
     async def hide_icon(self):
         try:
             await self.msg.bot.delete_message(self.msg.chat.id, self.msg.message_id)
-        except Exception:
-            print(self.msg.chat.id, 'Cannot delete timer message!')
+        except Exception as ex:
+            logger.error('Cannot delete timer message!', self.msg.chat.id, ex)
 
 
 class MediaGroupMiddleware(BaseMiddleware):
