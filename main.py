@@ -17,7 +17,7 @@ from aiogram_i18n.cores import FluentRuntimeCore
 from dotenv import load_dotenv
 from aiogram_i18n import I18nContext, LazyProxy, I18nMiddleware
 
-from middleware import LongTimeMiddleware, MediaGroupMiddleware
+from middleware import LongTimeMiddleware, MediaGroupMiddleware, LocaleManageMiddleware
 from utils import parse_html_to_md
 
 load_dotenv()
@@ -146,7 +146,9 @@ async def main() -> None:
         core=FluentRuntimeCore(
             path="locales/{locale}/LC_MESSAGES",
         ),
-        default_locale="en")
+        default_locale="en",
+        manager=LocaleManageMiddleware(),
+    )
     i18n_middleware.setup(dispatcher=dp)
 
     # And the run events dispatching

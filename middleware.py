@@ -4,6 +4,8 @@ from typing import List, Union, Callable, Dict, Any, Awaitable
 from aiogram import BaseMiddleware
 from aiogram.dispatcher.flags import get_flag
 from aiogram.types import Message, TelegramObject
+from aiogram_i18n.managers import BaseManager
+from aiogram.types.user import User
 
 
 class LongTimeMiddleware(BaseMiddleware):
@@ -24,10 +26,10 @@ class LongTimeMiddleware(BaseMiddleware):
     msg = None
 
     async def __call__(
-        self,
-        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
-        event: Message,
-        data: Dict[str, Any],
+            self,
+            handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+            event: Message,
+            data: Dict[str, Any],
     ) -> Any:
         flag = get_flag(data, "long_operation")
         if not flag:
@@ -70,10 +72,10 @@ class MediaGroupMiddleware(BaseMiddleware):
         super().__init__()
 
     async def __call__(
-        self,
-        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
-        event: Message,
-        data: Dict[str, Any],
+            self,
+            handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+            event: Message,
+            data: Dict[str, Any],
     ) -> Any:
         if not event.media_group_id:
             return await handler(event, data)
@@ -95,3 +97,12 @@ class MediaGroupMiddleware(BaseMiddleware):
         finally:
             if event.media_group_id and data.get("is_last"):
                 del self.album_data[event.media_group_id]
+
+
+class LocaleManageMiddleware(BaseManager):
+    async def get_locale(self, event_from_user: User) -> str:
+        default = event_from_user.language_code or self.default_locale
+        return default
+
+    async def set_locale(self, locale: str, event_from_user: User) -> None:
+        pass
