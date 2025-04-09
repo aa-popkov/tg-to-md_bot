@@ -27,8 +27,8 @@ dp = Dispatcher()
 dp.message.middleware(MediaGroupMiddleware())
 dp.message.middleware(LongTimeMiddleware())
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s')
 logger = logging.getLogger(__name__)
+
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message, i18n: I18nContext) -> None:
@@ -158,5 +158,7 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    logging.basicConfig(level=logging.INFO,
+                        format='%(asctime)s - %(name)s - %(levelname)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s',
+                        stream=sys.stdout)
     asyncio.run(main())

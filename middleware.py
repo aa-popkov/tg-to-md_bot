@@ -4,11 +4,13 @@ from typing import List, Union, Callable, Dict, Any, Awaitable
 
 from aiogram import BaseMiddleware
 from aiogram.dispatcher.flags import get_flag
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, TelegramObject
 from aiogram_i18n.managers import BaseManager
 from aiogram.types.user import User
 
 logger = logging.getLogger(__name__)
+
 
 class LongTimeMiddleware(BaseMiddleware):
     clock_icons: list[str] = [
@@ -102,9 +104,12 @@ class MediaGroupMiddleware(BaseMiddleware):
 
 
 class LocaleManageMiddleware(BaseManager):
-    async def get_locale(self, event_from_user: User) -> str:
+    async def get_locale(self, event_from_user: User, state: FSMContext) -> str:
         default = event_from_user.language_code or self.default_locale
+        locale = await state.get_value("locale")
+        if locale:
+            return locale
         return default
 
-    async def set_locale(self, locale: str, event_from_user: User) -> None:
-        pass
+    async def set_locale(self, locale: str, event_from_user: User, state: FSMContext) -> None:
+        await state.update_data({"locale": locale})

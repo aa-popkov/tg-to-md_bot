@@ -25,6 +25,8 @@ help-message = <b>📄 Markdown Converter Bot</b>
     • 📚 Создания документации
     • 💾 Сохранения красивого форматирования
 
+    OpenSource - https://github.com/aa-popkov/tg-to-md_bot
+
     { cur-lang }
 
     <b>Попробуй прямо сейчас!</b>
