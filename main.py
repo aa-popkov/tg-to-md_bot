@@ -65,17 +65,6 @@ async def command_set_en_lang(message: Message, i18n: I18nContext) -> None:
 
 
 @dp.message(F.text, flags={"long_operation": True})
-async def test_i18n(message: Message, i18n: I18nContext) -> None:
-    try:
-        name = message.from_user.mention_html()
-        msg = i18n.get("hello", user=name)
-        await message.reply(msg)
-    except Exception as ex:
-        logger.error(ex)
-        await message.answer(i18n.get("some-problem"))
-
-
-@dp.message(F.text, flags={"long_operation": True})
 async def parse_message(message: Message, i18n: I18nContext) -> None:
     try:
         if not message.entities:
