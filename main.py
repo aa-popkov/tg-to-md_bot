@@ -13,7 +13,9 @@ from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, BufferedInputFile, BotCommand
 from aiogram.enums import ContentType
+from aiogram_i18n.cores import FluentRuntimeCore
 from dotenv import load_dotenv
+from aiogram_i18n import I18nContext, LazyProxy, I18nMiddleware
 
 from middleware import LongTimeMiddleware, MediaGroupMiddleware
 from utils import parse_html_to_md
@@ -27,72 +29,67 @@ dp.message.middleware(LongTimeMiddleware())
 
 
 @dp.message(CommandStart())
-async def command_start_handler(message: Message) -> None:
-    await message.answer(f"🌟 <b>Привет, {message.from_user.full_name}!</b> 👋\n"
-                         f"\n"
-                         f"Рад тебя видеть! Я — Markdown Converter Bot, твой помощник в создании аккуратных Markdown-файлов из Telegram-сообщений. 📄✨\n"
-                         f"\n"
-                         f"Просто <b>перешли мне пост</b> с текстом, картинками 🖼️ или <code>кодом</code> — и я мгновенно превращу его в удобный файл с идеальным форматированием!\n"
-                         f"\n"
-                         f"🚀 <b>Попробуй прямо сейчас</b> — это займет всего пару секунд!\n"
-                         f"\n"
-                         f"<b>Как пользоваться?</b> Легко:\n"
-                         f"1️⃣ Отправь мне любое сообщение из Telegram.\n"
-                         f"2️⃣ Получи готовый Markdown-файл. 📂\n"
-                         f"\n"
-                         f"Готов упростить твою работу с текстами? Начинаем! 😊\n"
-                         f"<i>Повторить описание более подробно можно в любой момент командой -</i> /help"
-                         )
+async def command_start_handler(message: Message, i18n: I18nContext) -> None:
+    await message.answer(i18n.get("start-message", user=message.from_user.full_name))
 
 
 @dp.message(Command(commands=["help"]), flags={"long_operation": True})
-async def command_help_handler(message: Message) -> None:
-    help_message = await message.answer("<b>📄 Markdown Converter Bot</b>\n"
-                                        "\n"
-                                        "<i>Превращай Telegram-посты в красивые Markdown-файлы!</i>\n"
-                                        "\n"
-                                        "✨ <b>Что умеет этот бот?</b> ✨\n"
-                                        "\n"
-                                        "🔹 <b>Конвертирует</b> текст со стилями Telegram (<b>жирный</b>, <i>курсив</i>, <code>моноширинный</code> и др.) в Markdown-разметку.  \n"
-                                        "🔹 <b>Сохраняет</b> форматирование: заголовки, списки, ссылки и даже <code>код</code>!\n"
-                                        "🔹 <b>Добавляет картинки</b> 🖼️ – если в посте есть изображения, они встроятся в файл.\n"
-                                        "🔹 <b>Отправляет готовый файл</b> 📂 – скачивай и используй в своих проектах!\n"
-                                        "\n"
-                                        "💡 <b>Как использовать?</b>\n"
-                                        "Просто <b>перешли</b> боту любой пост или сообщение – и получи <u>Markdown-документ</u> в ответ!  \n"
-                                        "\n"
-                                        "🚀 <i>Идеально для:</i>\n"
-                                        "• 📝 Конспектирования полезных постов  \n"
-                                        "• 📚 Создания документации\n"
-                                        "• 💾 Сохранения красивого форматирования  \n"
-                                        "\n"
-                                        "<b>Попробуй прямо сейчас!</b>"
-                                        )
+async def command_help_handler(message: Message, i18n: I18nContext) -> None:
+    help_message = await message.answer(i18n.get("help-message"))
     parsed_message = parse_html_to_md(help_message.html_text, help_message.entities)
     cur_date = datetime.now().strftime("%Y%m%d_%H%M%S%f")
     text_file = BufferedInputFile(parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md")
-    await message.answer_document(text_file, caption=f"👆Пример, предыдущее сообщение в Markdown")
+    await message.answer_document(text_file, caption=i18n.get("help-message-example"))
+
+
+@dp.message(Command(commands=["language_ru"]))
+async def command_set_ru_lang(message: Message, i18n: I18nContext) -> None:
+    try:
+        await i18n.set_locale("ru")
+        await message.answer(i18n.get("change-lang"))
+    except Exception as ex:
+        print(ex)
+        await message.answer(i18n.get("some-problem"))
+
+
+@dp.message(Command(commands=["language_en"]))
+async def command_set_en_lang(message: Message, i18n: I18nContext) -> None:
+    try:
+        await i18n.set_locale("en")
+        await message.answer(i18n.get("change-lang"))
+    except Exception as ex:
+        print(ex)
+        await message.answer(i18n.get("some-problem"))
 
 
 @dp.message(F.text, flags={"long_operation": True})
-async def parse_message(message: Message) -> None:
+async def test_i18n(message: Message, i18n: I18nContext) -> None:
+    try:
+        name = message.from_user.mention_html()
+        msg = i18n.get("hello", user=name)
+        await message.reply(msg)
+    except Exception as ex:
+        print(ex)
+        await message.answer(i18n.get("some-problem"))
+
+
+@dp.message(F.text, flags={"long_operation": True})
+async def parse_message(message: Message, i18n: I18nContext) -> None:
     try:
         if not message.entities:
-            await message.answer(
-                message.text if message.text else "Что-то не так!")
+            await message.answer(message.text)
             return
         parsed_message = parse_html_to_md(message.html_text, message.entities)
-        # parsed_message = parse_text_to_md(message.text, message.entities)
         cur_date = datetime.now().strftime("%Y%m%d_%H%M%S%f")
         text_file = BufferedInputFile(parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md")
         await message.answer_document(text_file)
     except Exception as ex:
         print(ex)
-        await message.answer("Что-то не так!")
+        await message.answer(i18n.get("some-problem"))
 
 
 @dp.message(F.caption & (F.media_group_id == None), flags={"long_operation": True})
-async def parse_message_with_caption(message: Message) -> None:
+async def parse_message_with_caption(message: Message, i18n: I18nContext) -> None:
     try:
         parsed_message = parse_html_to_md(message.html_text, message.caption_entities)
         cur_date = datetime.now().strftime("%Y%m%d_%H%M%S%f")
@@ -106,12 +103,12 @@ async def parse_message_with_caption(message: Message) -> None:
         await message.answer_document(text_file)
     except Exception as ex:
         print(ex)
-        await message.answer("Что-то не так!")
+        await message.answer(i18n.get("some-problem"))
 
 
 @dp.message((F.content_type == ContentType.PHOTO) & (F.media_group_id is not None),
             flags={"get_media_group": True, "long_operation": True}, )
-async def test_media_group(message: Message, album: List[Message] | None) -> None:
+async def parse_message_with_media_group(message: Message, album: List[Message] | None, i18n: I18nContext) -> None:
     try:
         parsed_message = parse_html_to_md(message.html_text, message.caption_entities)
         cur_date = datetime.now().strftime("%Y%m%d_%H%M%S%f")
@@ -125,12 +122,12 @@ async def test_media_group(message: Message, album: List[Message] | None) -> Non
         await message.answer_document(text_file)
     except Exception as ex:
         print(ex)
-        await message.answer("Что-то не так!")
+        await message.answer(i18n.get("some-problem"))
 
 
 @dp.message()
-async def unknown_handler(message: Message) -> None:
-    await message.answer("Такой тип сообщений не обрабатывается!")
+async def unknown_handler(message: Message, i18n: I18nContext) -> None:
+    await message.answer(i18n.get("unsupported-message"))
 
 
 async def main() -> None:
@@ -138,10 +135,19 @@ async def main() -> None:
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
     commands = [
-        BotCommand(command="/start", description="🏁 Старт"),
-        BotCommand(command="/help", description="❓ Помощь"),
+        BotCommand(command="/start", description="🏁 Start"),
+        BotCommand(command="/help", description="❓ Help"),
+        BotCommand(command="/language_ru", description="🇷🇺 RU Language"),
+        BotCommand(command="/language_en", description="🇬🇧 EN Language"),
     ]
     await bot.set_my_commands(commands)
+
+    i18n_middleware = I18nMiddleware(
+        core=FluentRuntimeCore(
+            path="locales/{locale}/LC_MESSAGES",
+        ),
+        default_locale="en")
+    i18n_middleware.setup(dispatcher=dp)
 
     # And the run events dispatching
     await dp.start_polling(bot)
