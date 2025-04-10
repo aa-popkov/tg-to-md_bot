@@ -9,18 +9,25 @@ def parse_html_to_md(html_text: str, entities: List[MessageEntity] | None):
     if not entities or not len(entities):
         return html_text
 
+    type_priority = {
+        MessageEntityType.BOLD: 0,
+        MessageEntityType.ITALIC: 0,
+        MessageEntityType.UNDERLINE: 0,
+        MessageEntityType.STRIKETHROUGH: 0,
+        MessageEntityType.PRE: 1,
+        MessageEntityType.CODE: 2,
+        MessageEntityType.TEXT_LINK: 3
+    }
 
-    # TODO: It's a bullshit, need correct sort and delete this
-    format_entities = list(filter(
-        lambda x: x.type in [MessageEntityType.BOLD, MessageEntityType.ITALIC, MessageEntityType.UNDERLINE,
-                             MessageEntityType.STRIKETHROUGH], entities))
-    code_entities = list(filter(lambda x: x.type == MessageEntityType.CODE, entities))
-    pre_entities = list(filter(lambda x: x.type == MessageEntityType.PRE, entities))
-    link_entities = list(filter(lambda x: x.type == MessageEntityType.TEXT_LINK, entities))
+    sorted_entities = sorted(
+        filter(lambda x: x.type in type_priority.keys(), entities),
+        key=lambda x: type_priority.get(x.type, float('inf'))
+    )
 
-    html_text = parse_by_entity(html_text, [*format_entities, *pre_entities, *code_entities, *link_entities])
+    html_text = parse_by_entity(html_text, sorted_entities)
 
     return html_text
+
 
 def parse_by_entity(html_text: str, entities: List[MessageEntity]):
     for entity in entities:
@@ -67,10 +74,10 @@ def replace_html_formatting_to_md(html_text: str, html_chars: str, md_chars: str
 
 def replace_html_links_to_md(html_text: str, start_index: int = 0):
     """
-    Преобразует html-ссылки в markdwon-ссылки во всем тексте.\r\n
-    Пример:  \n
-    ИЗ - <a href="https://google.com/">link</a> \n
-    В - [link](https://google.com/)
+    Replace html-links to markdown syntax in all html_text.\r\n
+    Example:  \n
+    From - <a href="https://google.com/">link</a> \n
+    To - [link](https://google.com/)
     :param html_text: Текст html
     :param start_index:
     :return:

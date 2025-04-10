@@ -18,7 +18,7 @@ _Converts Telegram messages into Markdown files while preserving formatting and 
 - [ ] Processing messages with video
 - [x] Add multilingual support (i18n)
   - [x] 🇷🇺
-  - [x] 🇺🇸
+  - [x] 🇬🇧
 
 ## 🚀 Quick Start
 

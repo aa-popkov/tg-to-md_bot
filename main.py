@@ -7,7 +7,7 @@ from datetime import datetime
 from os import getenv
 from typing import List
 
-from aiogram import Bot, Dispatcher, html, F
+from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart, Command
@@ -15,28 +15,36 @@ from aiogram.types import Message, BufferedInputFile, BotCommand
 from aiogram.enums import ContentType
 from aiogram_i18n.cores import FluentRuntimeCore
 from dotenv import load_dotenv
-from aiogram_i18n import I18nContext, LazyProxy, I18nMiddleware
+from aiogram_i18n import I18nContext, I18nMiddleware
 
 from middleware import LongTimeMiddleware, MediaGroupMiddleware, LocaleManageMiddleware
 from utils import parse_html_to_md
 
 load_dotenv()
 TOKEN = getenv("BOT_TOKEN")
-
 dp = Dispatcher()
-dp.message.middleware(MediaGroupMiddleware())
-dp.message.middleware(LongTimeMiddleware())
-
 logger = logging.getLogger(__name__)
 
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message, i18n: I18nContext) -> None:
+    """
+    Start command handler. Answer Start message
+    :param message: TG Message
+    :param i18n: i18n Context
+    :return:
+    """
     await message.answer(i18n.get("start-message", user=message.from_user.full_name))
 
 
 @dp.message(Command(commands=["help"]), flags={"long_operation": True})
 async def command_help_handler(message: Message, i18n: I18nContext) -> None:
+    """
+    Help command handle. Send help message, after transform help message to markdown file and send
+    :param message: TG Message
+    :param i18n: i18n Context
+    :return:
+    """
     help_message = await message.answer(i18n.get("help-message"))
     parsed_message = parse_html_to_md(help_message.html_text, help_message.entities)
     cur_date = datetime.now().strftime("%Y%m%d_%H%M%S%f")
@@ -46,6 +54,12 @@ async def command_help_handler(message: Message, i18n: I18nContext) -> None:
 
 @dp.message(Command(commands=["language_ru"]))
 async def command_set_ru_lang(message: Message, i18n: I18nContext) -> None:
+    """
+    Changing language to Russian command handle. Changing user locale to Russian and sent notification about this.
+    :param message: TG Message
+    :param i18n: i18n Context
+    :return:
+    """
     try:
         await i18n.set_locale("ru")
         await message.answer(i18n.get("change-lang"))
@@ -56,6 +70,12 @@ async def command_set_ru_lang(message: Message, i18n: I18nContext) -> None:
 
 @dp.message(Command(commands=["language_en"]))
 async def command_set_en_lang(message: Message, i18n: I18nContext) -> None:
+    """
+    Changing language to English command handle. Changing user locale to English and sent notification about this.
+    :param message: TG Message
+    :param i18n: i18n Context
+    :return:
+    """
     try:
         await i18n.set_locale("en")
         await message.answer(i18n.get("change-lang"))
@@ -66,10 +86,13 @@ async def command_set_en_lang(message: Message, i18n: I18nContext) -> None:
 
 @dp.message(F.text, flags={"long_operation": True})
 async def parse_message(message: Message, i18n: I18nContext) -> None:
+    """
+    Clear text handle. Transforming text from telegram markup to markdown markup and sent it's into markdown file.
+    :param message: TG Message
+    :param i18n: i18n Context
+    :return:
+    """
     try:
-        if not message.entities:
-            await message.answer(message.text)
-            return
         parsed_message = parse_html_to_md(message.html_text, message.entities)
         cur_date = datetime.now().strftime("%Y%m%d_%H%M%S%f")
         text_file = BufferedInputFile(parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md")
@@ -81,6 +104,13 @@ async def parse_message(message: Message, i18n: I18nContext) -> None:
 
 @dp.message(F.caption & (F.media_group_id == None), flags={"long_operation": True})
 async def parse_message_with_caption(message: Message, i18n: I18nContext) -> None:
+    """
+    Text with single media data handle. Transforming text from telegram markup to markdown markup,
+    transform image to base64 encoding string-link and sent it's into markdown file.
+    :param message: TG Message
+    :param i18n: i18n Context
+    :return:
+    """
     try:
         parsed_message = parse_html_to_md(message.html_text, message.caption_entities)
         cur_date = datetime.now().strftime("%Y%m%d_%H%M%S%f")
@@ -100,6 +130,13 @@ async def parse_message_with_caption(message: Message, i18n: I18nContext) -> Non
 @dp.message((F.content_type == ContentType.PHOTO) & (F.media_group_id is not None),
             flags={"get_media_group": True, "long_operation": True}, )
 async def parse_message_with_media_group(message: Message, album: List[Message] | None, i18n: I18nContext) -> None:
+    """
+    Text with multiple media data handle. Transforming text from telegram markup to markdown markup,
+    transform each image to base64 encoding string-link and sent it's into markdown file.
+    :param message: TG Message
+    :param i18n: i18n Context
+    :return:
+    """
     try:
         parsed_message = parse_html_to_md(message.html_text, message.caption_entities)
         cur_date = datetime.now().strftime("%Y%m%d_%H%M%S%f")
@@ -118,12 +155,20 @@ async def parse_message_with_media_group(message: Message, album: List[Message] 
 
 @dp.message()
 async def unknown_handler(message: Message, i18n: I18nContext) -> None:
+    """
+    Handler for all other messages.
+    :param message: TG Message
+    :param i18n: i18n Context
+    :return:
+    """
     await message.answer(i18n.get("unsupported-message"))
 
 
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    dp.message.middleware(MediaGroupMiddleware())
+    dp.message.middleware(LongTimeMiddleware())
 
     commands = [
         BotCommand(command="/start", description="🏁 Start"),
