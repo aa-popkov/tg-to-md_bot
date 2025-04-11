@@ -1,7 +1,6 @@
 from typing import List
 
 from aiogram.enums import MessageEntityType
-
 from aiogram.types import MessageEntity
 
 
@@ -14,9 +13,11 @@ def parse_html_to_md(html_text: str, entities: List[MessageEntity] | None):
         MessageEntityType.ITALIC: 0,
         MessageEntityType.UNDERLINE: 0,
         MessageEntityType.STRIKETHROUGH: 0,
+        MessageEntityType.BLOCKQUOTE: 0,
         MessageEntityType.PRE: 1,
         MessageEntityType.CODE: 2,
-        MessageEntityType.TEXT_LINK: 3
+        MessageEntityType.TEXT_LINK: 3,
+        MessageEntityType.CUSTOM_EMOJI: 4
     }
 
     sorted_entities = sorted(
@@ -37,6 +38,9 @@ def parse_by_entity(html_text: str, entities: List[MessageEntity]):
         if entity.type == MessageEntityType.ITALIC:
             html_text = replace_html_formatting_to_md(html_text, "<i>", "*")
             continue
+        if entity.type == MessageEntityType.BLOCKQUOTE:
+            html_text = replace_html_formatting_to_md(html_text, "<blockquote>", "")
+            continue
         if entity.type == MessageEntityType.UNDERLINE:
             html_text = replace_html_formatting_to_md(html_text, "<u>", "**")
             continue
@@ -51,6 +55,9 @@ def parse_by_entity(html_text: str, entities: List[MessageEntity]):
             continue
         if entity.type == MessageEntityType.PRE:
             html_text = replace_html_code_block_to_md(html_text)
+            continue
+        if entity.type == MessageEntityType.CUSTOM_EMOJI:
+            html_text = replace_tg_emoji_link_to_text(html_text)
             continue
 
     return html_text
@@ -71,6 +78,17 @@ def replace_html_formatting_to_md(html_text: str, html_chars: str, md_chars: str
                                                   find_end_index - (len_html_chars * 2 + 1) + (len(md_chars) * 2))
     return html_text
 
+
+def replace_tg_emoji_link_to_text(html_text: str, start_index: int = 0):
+    find_start_index = html_text.find("<tg-emoji emoji-id=\"", start_index)
+    find_end_index = html_text.find("</tg-emoji>", start_index)
+    if find_start_index == -1 or find_end_index == -1:
+        return html_text
+    cur_text_len = len(html_text)
+    html_text = html_text[:find_start_index] + html_text[find_end_index-1] + html_text[find_end_index + 11:]
+    if html_text.find("<tg-emoji emoji-id=\"", find_end_index) != -1:
+        html_text = replace_tg_emoji_link_to_text(html_text, find_end_index - (cur_text_len-len(html_text)))
+    return replace_tg_emoji_link_to_text(html_text)
 
 def replace_html_links_to_md(html_text: str, start_index: int = 0):
     """
