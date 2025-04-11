@@ -85,10 +85,11 @@ def replace_tg_emoji_link_to_text(html_text: str, start_index: int = 0):
     if find_start_index == -1 or find_end_index == -1:
         return html_text
     cur_text_len = len(html_text)
-    html_text = html_text[:find_start_index] + html_text[find_end_index-1] + html_text[find_end_index + 11:]
+    html_text = html_text[:find_start_index] + html_text[find_end_index - 1] + html_text[find_end_index + 11:]
     if html_text.find("<tg-emoji emoji-id=\"", find_end_index) != -1:
-        html_text = replace_tg_emoji_link_to_text(html_text, find_end_index - (cur_text_len-len(html_text)))
+        html_text = replace_tg_emoji_link_to_text(html_text, find_end_index - (cur_text_len - len(html_text)))
     return replace_tg_emoji_link_to_text(html_text)
+
 
 def replace_html_links_to_md(html_text: str, start_index: int = 0):
     """
@@ -108,7 +109,10 @@ def replace_html_links_to_md(html_text: str, start_index: int = 0):
     full_link = html_text[find_start_index:find_end_index + 4]
     link_url = full_link.split("<a href=\"")[1].split("\">")[0]
     link_text = full_link.split("\">")[1].split("</a>")[0]
-    html_text = html_text.replace(full_link, f"[{link_text}]({link_url})")
+    if link_text == '\u200b\u200b' and link_url.startswith('https://telegra.ph/file/'):
+        html_text = html_text.replace(full_link, f"![{link_url}]({link_url})\n")
+    else:
+        html_text = html_text.replace(full_link, f"[{link_text}]({link_url})")
 
     if html_text.find("<a href=\"", find_end_index) != -1:
         # -11 - it's a diff len of char between html link and markdown link without data
