@@ -24,9 +24,7 @@ from utils import parse_html_to_md
 
 
 redis = (
-    client.Redis(
-        password=config.REDIS_PASSWORD, host=config.REDIS_HOST, port=config.REDIS_PORT
-    )
+    client.Redis(password=config.REDIS_PASSWORD, host=config.REDIS_HOST)
     if config.APP_MODE == "prod"
     else None
 )
