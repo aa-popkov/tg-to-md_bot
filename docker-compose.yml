@@ -1,3 +1,6 @@
+volumes:
+  redis_data:
+
 services:
   bot:
     build:
@@ -6,4 +9,17 @@ services:
     hostname: tg-to-md-bot
     env_file:
       - .env
+    restart: unless-stopped
+
+  redis:
+    image: redis/redis-stack:7.2.0-v4
+    container_name: ${REDIS_HOST}
+    hostname: ${REDIS_HOST}
+    volumes:
+      - redis_data:/data
+      - ./config/redis.conf:/redis-stack.conf
+    environment:
+      - REDIS_ARGS=--requirepass ${REDIS_PASSWORD}
+#    ports:
+#      - "6379:6379"
     restart: unless-stopped

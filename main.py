@@ -4,7 +4,6 @@ import io
 import logging
 import sys
 from datetime import datetime
-from os import getenv
 from typing import List
 
 from aiogram import Bot, Dispatcher, F
@@ -14,15 +13,28 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, BufferedInputFile, BotCommand
 from aiogram.enums import ContentType
 from aiogram_i18n.cores import FluentRuntimeCore
-from dotenv import load_dotenv
 from aiogram_i18n import I18nContext, I18nMiddleware
+from aiogram.fsm.storage.redis import RedisStorage
+from aiogram.fsm.storage.memory import MemoryStorage
+from redis.asyncio import client
 
+from config import config
 from middleware import LongTimeMiddleware, MediaGroupMiddleware, LocaleManageMiddleware
 from utils import parse_html_to_md
 
-load_dotenv()
-TOKEN = getenv("BOT_TOKEN")
-dp = Dispatcher()
+
+redis = (
+    client.Redis(
+        password=config.REDIS_PASSWORD, host=config.REDIS_HOST, port=config.REDIS_PORT
+    )
+    if config.APP_MODE == "prod"
+    else None
+)
+
+dp = Dispatcher(
+    storage=MemoryStorage() if config.APP_MODE == "dev" else RedisStorage(redis)
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -48,7 +60,9 @@ async def command_help_handler(message: Message, i18n: I18nContext) -> None:
     help_message = await message.answer(i18n.get("help-message"))
     parsed_message = parse_html_to_md(help_message.html_text, help_message.entities)
     cur_date = datetime.now().strftime("%Y%m%d_%H%M%S%f")
-    text_file = BufferedInputFile(parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md")
+    text_file = BufferedInputFile(
+        parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md"
+    )
     await message.answer_document(text_file, caption=i18n.get("help-message-example"))
 
 
@@ -95,7 +109,9 @@ async def parse_message(message: Message, i18n: I18nContext) -> None:
     try:
         parsed_message = parse_html_to_md(message.html_text, message.entities)
         cur_date = datetime.now().strftime("%Y%m%d_%H%M%S%f")
-        text_file = BufferedInputFile(parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md")
+        text_file = BufferedInputFile(
+            parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md"
+        )
         await message.answer_document(text_file)
     except Exception as ex:
         logger.error(ex)
@@ -119,17 +135,25 @@ async def parse_message_with_caption(message: Message, i18n: I18nContext) -> Non
             await message.bot.download(message.photo[-1].file_id, destination=buffer)
             b64_stream_value = base64.b64encode(buffer.getvalue()).decode("utf-8")
             buffer.close()
-            parsed_message += f"\n\n![TG_PHOTO](data:image/jpeg;base64,{b64_stream_value})"
-        text_file = BufferedInputFile(parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md")
+            parsed_message += (
+                f"\n\n![TG_PHOTO](data:image/jpeg;base64,{b64_stream_value})"
+            )
+        text_file = BufferedInputFile(
+            parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md"
+        )
         await message.answer_document(text_file)
     except Exception as ex:
         logger.error(ex)
         await message.answer(i18n.get("some-problem"))
 
 
-@dp.message((F.content_type == ContentType.PHOTO) & (F.media_group_id is not None),
-            flags={"get_media_group": True, "long_operation": True}, )
-async def parse_message_with_media_group(message: Message, album: List[Message] | None, i18n: I18nContext) -> None:
+@dp.message(
+    (F.content_type == ContentType.PHOTO) & (F.media_group_id is not None),
+    flags={"get_media_group": True, "long_operation": True},
+)
+async def parse_message_with_media_group(
+    message: Message, album: List[Message] | None, i18n: I18nContext
+) -> None:
     """
     Text with multiple media data handle. Transforming text from telegram markup to markdown markup,
     transform each image to base64 encoding string-link and sent it's into markdown file.
@@ -142,11 +166,17 @@ async def parse_message_with_media_group(message: Message, album: List[Message] 
         cur_date = datetime.now().strftime("%Y%m%d_%H%M%S%f")
         for message_photo in album:
             buffer = io.BytesIO()
-            await message_photo.bot.download(message_photo.photo[-1].file_id, destination=buffer)
+            await message_photo.bot.download(
+                message_photo.photo[-1].file_id, destination=buffer
+            )
             b64_stream_value = base64.b64encode(buffer.getvalue()).decode("utf-8")
             buffer.close()
-            parsed_message += f"\n\n![TG_PHOTO](data:image/jpeg;base64,{b64_stream_value})"
-        text_file = BufferedInputFile(parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md")
+            parsed_message += (
+                f"\n\n![TG_PHOTO](data:image/jpeg;base64,{b64_stream_value})"
+            )
+        text_file = BufferedInputFile(
+            parsed_message.encode(encoding="utf-8"), filename=f"{cur_date}.md"
+        )
         await message.answer_document(text_file)
     except Exception as ex:
         logger.error(ex)
@@ -166,7 +196,9 @@ async def unknown_handler(message: Message, i18n: I18nContext) -> None:
 
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
-    bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    bot = Bot(
+        token=config.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+    )
     dp.message.middleware(MediaGroupMiddleware())
     dp.message.middleware(LongTimeMiddleware())
 
@@ -192,7 +224,7 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s - %(name)s - %(levelname)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s',
-                        stream=sys.stdout)
+    logging.basicConfig(
+        level=config.LOG_LEVEL, format=config.LOV_FORMAT, stream=sys.stdout
+    )
     asyncio.run(main())
