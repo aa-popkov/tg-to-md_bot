@@ -156,6 +156,7 @@ async def parse_message_with_media_group(
     Text with multiple media data handle. Transforming text from telegram markup to markdown markup,
     transform each image to base64 encoding string-link and sent it's into markdown file.
     :param message: TG Message
+    :param album: Array of TG Message containing Photo
     :param i18n: i18n Context
     :return:
     """

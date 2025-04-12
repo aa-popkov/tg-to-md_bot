@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class LongTimeMiddleware(BaseMiddleware):
-    clock_icons: list[str] = [
+    clock_icons: List[str] = [
         "🕐",
         "🕑",
         "🕒",
@@ -30,10 +30,10 @@ class LongTimeMiddleware(BaseMiddleware):
     msg = None
 
     async def __call__(
-            self,
-            handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
-            event: Message,
-            data: Dict[str, Any],
+        self,
+        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        event: Message,
+        data: Dict[str, Any],
     ) -> Any:
         flag = get_flag(data, "long_operation")
         if not flag:
@@ -61,7 +61,7 @@ class LongTimeMiddleware(BaseMiddleware):
         try:
             await self.msg.bot.delete_message(self.msg.chat.id, self.msg.message_id)
         except Exception as ex:
-            logger.error('Cannot delete timer message!', self.msg.chat.id, ex)
+            logger.error("Cannot delete timer message!", self.msg.chat.id, ex)
 
 
 class MediaGroupMiddleware(BaseMiddleware):
@@ -76,10 +76,10 @@ class MediaGroupMiddleware(BaseMiddleware):
         super().__init__()
 
     async def __call__(
-            self,
-            handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
-            event: Message,
-            data: Dict[str, Any],
+        self,
+        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        event: Message,
+        data: Dict[str, Any],
     ) -> Any:
         if not event.media_group_id:
             return await handler(event, data)
@@ -111,5 +111,7 @@ class LocaleManageMiddleware(BaseManager):
             return locale
         return default
 
-    async def set_locale(self, locale: str, event_from_user: User, state: FSMContext) -> None:
+    async def set_locale(
+        self, locale: str, event_from_user: User, state: FSMContext
+    ) -> None:
         await state.update_data({"locale": locale})
