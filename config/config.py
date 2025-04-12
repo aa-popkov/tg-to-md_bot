@@ -5,7 +5,7 @@ from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class AppMode(Enum, str):
+class AppMode(str, Enum):
     DEV = "dev"
     PROD = "prod"
 
