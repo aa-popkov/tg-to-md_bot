@@ -31,7 +31,24 @@ help-message = <b>📄 Markdown Converter Bot</b>
 
     <b>Try it right now!</b>
 
-help-message-example = 👆Example: the previous message in Markdown
+example-message = <b>🔶 Bold text 🔶</b>
+
+    <i>🌀 Italic 🌀</i>
+
+    <s>❌ Strikethrough text ❌</s>
+
+    <a href="https://google.com/">🌐 Link 🌐</a>
+
+    <code>💻 inline code 💻</code>
+
+    <pre><code class="language-python">
+    # 🐍 Python code block 🐍
+    print('Code block with language!')
+    </code></pre>
+
+    <pre>
+    📜 Code block without language 📜
+    </pre>
 
 start-message = 🌟 <b>Hello, { $user }!</b> 👋
     Nice to see you! A little info about me:
