@@ -157,12 +157,12 @@ def replace_html_code_block_to_md(html_text: str, start_index: int = 0):
         code_lang = code_string.split("language-")[1].split('">')[0]
         html_text = html_text.replace(
             code_string,
-            f"""```{code_lang}\n{code_string.split('">')[1].split('</code>')[0]}\n```""",
+            f"""```{code_lang}\n{code_string.split('">')[1].split('</code>')[0]}\n```\n""",
         )
     else:
         html_text = html_text.replace(
             code_string,
-            f"```{code_lang}\n{code_string.split('<pre>')[1].split('</pre>')[0]}\n```",
+            f"```{code_lang}\n{code_string.split('<pre>')[1].split('</pre>')[0]}\n```\n",
         )
 
     if html_text.find("<pre>", find_end_index) != -1:
