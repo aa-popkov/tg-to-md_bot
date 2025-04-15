@@ -19,7 +19,7 @@ class Config(BaseSettings):
     REDIS_HOST: str = "tg-to-md-bot-redis"
     REDIS_PASSWORD: str | None
 
-    LOG_LEVEL: int = logging.INFO
+    LOG_LEVEL: int | str = logging.INFO
     LOV_FORMAT: str = (
         "%(asctime)s - %(name)s - %(levelname)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s"
     )

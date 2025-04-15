@@ -9,7 +9,43 @@ from aiogram.types import Message, TelegramObject
 from aiogram_i18n.managers import BaseManager
 from aiogram.types.user import User
 
+from config import config, AppMode
+
 logger = logging.getLogger(__name__)
+
+
+class LoggerMiddleware(BaseMiddleware):
+    async def __call__(
+        self,
+        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        event: Message,
+        data: Dict[str, Any],
+    ) -> Any:
+        logger.info(
+            f"Handle event from user: "
+            f"{event.from_user.id=} "
+            f"{event.from_user.username=} "
+            f"{event.from_user.full_name=} "
+            f"{event.from_user.language_code=}"
+        )
+        return await handler(event, data)
+
+
+class DevModeMiddleware(BaseMiddleware):
+    async def __call__(
+        self,
+        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        event: Message,
+        data: Dict[str, Any],
+    ) -> Any:
+        if (
+            config.APP_MODE == AppMode.DEV
+            and str(event.from_user.id) not in config.BOT_ADMIN_CHAT_ID
+        ):
+            return await event.bot.send_message(
+                event.chat.id, "Bot temporally unavailable, try again later!"
+            )
+        return await handler(event, data)
 
 
 class LongTimeMiddleware(BaseMiddleware):

@@ -151,6 +151,8 @@ def replace_html_code_block_to_md(html_text: str, start_index: int = 0):
     code_string = html_text[find_start_index : find_end_index + 6]
     code_lang = ""
 
+    cur_text_len = len(html_text)
+
     if code_string.startswith('<pre><code class="language-'):
         code_lang = code_string.split("language-")[1].split('">')[0]
         html_text = html_text.replace(
@@ -164,5 +166,7 @@ def replace_html_code_block_to_md(html_text: str, start_index: int = 0):
         )
 
     if html_text.find("<pre>", find_end_index) != -1:
-        html_text = replace_html_code_block_to_md(html_text, find_end_index + 4)
+        html_text = replace_html_code_block_to_md(
+            html_text, find_end_index - (cur_text_len - len(html_text))
+        )
     return html_text

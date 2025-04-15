@@ -19,7 +19,13 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from redis.asyncio import client
 
 from config import config
-from middleware import LongTimeMiddleware, MediaGroupMiddleware, LocaleManageMiddleware
+from middleware import (
+    LongTimeMiddleware,
+    MediaGroupMiddleware,
+    LocaleManageMiddleware,
+    DevModeMiddleware,
+    LoggerMiddleware,
+)
 from utils import parse_html_to_md
 
 
@@ -198,6 +204,8 @@ async def main() -> None:
     bot = Bot(
         token=config.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
+    dp.message.middleware(LoggerMiddleware())
+    dp.message.middleware(DevModeMiddleware())
     dp.message.middleware(MediaGroupMiddleware())
     dp.message.middleware(LongTimeMiddleware())
 
